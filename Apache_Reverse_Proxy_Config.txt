@@ -1,0 +1,60 @@
+Configuración de Apache como Reverse Proxy (XAMPP)
+===================================================
+
+Para configurar Apache como un servidor web reverse proxy para los microservicios, siga estos pasos:
+
+1. Habilite los módulos necesarios en el archivo httpd.conf de Apache:
+   - LoadModule proxy_module modules/mod_proxy.so
+   - LoadModule proxy_http_module modules/mod_proxy_http.so
+
+2. Agregue la siguiente configuración al final del archivo httpd.conf o en httpd-vhosts.conf:
+
+<VirtualHost *:80>
+    ServerName bookpoint.local
+
+    # Microservicio de Pedidos
+    ProxyPass /api/pedidos http://localhost:8081/api/pedidos
+    ProxyPassReverse /api/pedidos http://localhost:8081/api/pedidos
+
+    # Microservicio de Inventario
+    ProxyPass /api/productos http://localhost:8083/api/productos
+    ProxyPassReverse /api/productos http://localhost:8083/api/productos
+
+    # Microservicio de Auth
+    ProxyPass /api/auth http://localhost:8082/api/auth
+    ProxyPassReverse /api/auth http://localhost:8082/api/auth
+
+    # Microservicio de Ventas
+    ProxyPass /api/ventas http://localhost:8084/api/ventas
+    ProxyPassReverse /api/ventas http://localhost:8084/api/ventas
+
+    # Microservicio de Despacho
+    ProxyPass /api/despacho http://localhost:8085/api/despacho
+    ProxyPassReverse /api/despacho http://localhost:8085/api/despacho
+
+    # Microservicio de Clientes
+    ProxyPass /api/clientes http://localhost:8086/api/clientes
+    ProxyPassReverse /api/clientes http://localhost:8086/api/clientes
+
+    # Microservicio de Sucursal
+    ProxyPass /api/sucursales http://localhost:8087/api/sucursales
+    ProxyPassReverse /api/sucursales http://localhost:8087/api/sucursales
+
+    # Microservicio de Bodega
+    ProxyPass /api/bodega http://localhost:8088/api/bodega
+    ProxyPassReverse /api/bodega http://localhost:8088/api/bodega
+
+    # Microservicio de Soporte
+    ProxyPass /api/soporte http://localhost:8089/api/soporte
+    ProxyPassReverse /api/soporte http://localhost:8089/api/soporte
+
+    # Microservicio de Catalogo
+    ProxyPass /api/catalogo http://localhost:8090/api/catalogo
+    ProxyPassReverse /api/catalogo http://localhost:8090/api/catalogo
+
+    ErrorLog "logs/bookpoint-error.log"
+    CustomLog "logs/bookpoint-access.log" common
+</VirtualHost>
+
+3. Asegúrese de que los puertos (8081-8090) coincidan con los configurados en application.properties de cada microservicio.
+4. Reinicie Apache desde el panel de control de XAMPP.
