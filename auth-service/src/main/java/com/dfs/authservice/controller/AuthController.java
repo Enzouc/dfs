@@ -30,6 +30,17 @@ public class AuthController {
         return usuarioRepository.findAll();
     }
 
+    @DeleteMapping("/usuarios/{id}")
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
+        log.info("Eliminando usuario con ID: {}", id);
+        if (usuarioRepository.existsById(id)) {
+            usuarioRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PatchMapping("/usuarios/{id}/permisos")
     public ResponseEntity<Usuario> modificarPermisos(@PathVariable Long id, @RequestBody Set<String> permisos) {
         log.info("Modificando permisos para usuario ID: {}", id);
@@ -46,4 +57,6 @@ public class AuthController {
         log.info("Monitoreando estado de la plataforma");
         return ResponseEntity.ok("Plataforma operativa - Todos los sistemas funcionando");
     }
+
+    
 }

@@ -47,4 +47,11 @@ public class PedidoController {
         PedidoResponseDTO actualizado = pedidoService.actualizarEstado(id, estado);
         return ResponseEntity.ok(actualizado);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarPedido(@PathVariable Long id) {
+        log.info("Eliminando pedido con ID: {}", id);
+        pedidoService.eliminarPedido(id);
+        return ResponseEntity.noContent().build();
+    }
 }

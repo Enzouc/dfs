@@ -43,4 +43,15 @@ public class VentaController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarVenta(@PathVariable Long id) {
+        log.info("Eliminando venta con ID: {}", id);
+        if (ventaRepository.existsById(id)) {
+            ventaRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

@@ -12,7 +12,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
 <name>auth-service</name>
 <description>Microservicio de auth service para BookPoint Chile</description>
 
-<dependencies>
-</dependencies>
+
 
 </project>

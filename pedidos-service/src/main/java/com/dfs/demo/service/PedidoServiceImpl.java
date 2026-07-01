@@ -106,6 +106,17 @@ public class PedidoServiceImpl implements PedidoService {
         return mapToResponseDTO(actualizado);
     }
 
+    @Override
+    @Transactional
+    public void eliminarPedido(Long id) {
+        log.info("Eliminando pedido con ID: {}", id);
+        if (pedidoRepository.existsById(id)) {
+            pedidoRepository.deleteById(id);
+        } else {
+            throw new ResourceNotFoundException("Pedido no encontrado con ID: " + id);
+        }
+    }
+
     private PedidoResponseDTO mapToResponseDTO(Pedido pedido) {
         return PedidoResponseDTO.builder()
                 .id(pedido.getId())

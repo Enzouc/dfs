@@ -40,4 +40,15 @@ public class DespachoController {
         log.info("Optimizando ruta para despacho ID: {}", despachoId);
         return ResponseEntity.ok("Ruta optimizada generada para el despacho " + despachoId);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarDespacho(@PathVariable Long id) {
+        log.info("Eliminando despacho con ID: {}", id);
+        if (despachoRepository.existsById(id)) {
+            despachoRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

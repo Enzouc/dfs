@@ -1,0 +1,305 @@
+================================================================================
+DOCUMENTACIÓN DE APIS PARA POSTMAN - PROYECTO BOOKPOINT CHILE (CON GATEWAY)
+================================================================================
+
+   - 200 OK: Éxito
+   - 201 Created: Recurso creado exitosamente
+   - 204 No Content: Éxito sin contenido de retorno
+   - 400 Bad Request: Datos inválidos
+   - 404 Not Found: Recurso no existe
+   - 500 Internal Server Error: Error interno del servicio
+
+--------------------------------------------------------------------------------
+1. CATEGORÍA: AUTENTICACIÓN Y USUARIOS (Auth-Service - vía Gateway)
+--------------------------------------------------------------------------------
+
+MÉTODO: POST
+RUTA: http://localhost:8080/api/auth/usuarios
+DESCRIPCIÓN: Crea un nuevo usuario en el sistema (Admin).
+CUERPO (JSON):
+{
+    "username": "nuevo_usuario",
+    "password": "password123",
+    "rol": "ADMIN",
+    "permisos": ["LEER", "ESCRIBIR"]
+}
+RESPUESTA EXITOSA (200 OK): Objeto usuario creado con ID.
+ESTADOS HTTP: 200 OK, 400 Bad Request.
+
+MÉTODO: GET
+RUTA: http://localhost:8080/api/auth/usuarios
+DESCRIPCIÓN: Lista todos los usuarios registrados.
+RESPUESTA EXITOSA (200 OK): Arreglo de usuarios.
+
+MÉTODO: PATCH
+RUTA: http://localhost:8080/api/auth/usuarios/{id}/permisos
+DESCRIPCIÓN: Modifica los permisos de un usuario específico.
+CUERPO (JSON): ["LEER", "ESCRIBIR", "BORRAR"]
+PARÁMETROS RUTA: id (Long)
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/auth/usuarios/{id}
+DESCRIPCIÓN: Elimina un usuario del sistema.
+PARÁMETROS RUTA: id (Long)
+ESTADOS HTTP: 204 No Content (Éxito), 404 Not Found (Si no existe).
+
+--------------------------------------------------------------------------------
+2. CATEGORÍA: INVENTARIO (Inventario-Service - vía Gateway)
+--------------------------------------------------------------------------------
+
+MÉTODO: GET
+RUTA: http://localhost:8080/api/productos
+DESCRIPCIÓN: Lista todos los productos disponibles.
+
+MÉTODO: POST
+RUTA: http://localhost:8080/api/productos
+DESCRIPCIÓN: Crea un nuevo producto.
+CUERPO (JSON):
+{
+    "nombre": "Libro de Ejemplo",
+    "descripcion": "Descripción detallada",
+    "precio": 15000.0,
+    "stockActual": 50
+}
+
+MÉTODO: GET
+RUTA: http://localhost:8080/api/productos/{id}/stock?cantidad={n}
+DESCRIPCIÓN: Valida si hay stock suficiente para una cantidad 'n'.
+PARÁMETROS QUERY: cantidad (Integer)
+
+MÉTODO: PATCH
+RUTA: http://localhost:8080/api/productos/{id}/ajuste?nuevoStock={n}
+DESCRIPCIÓN: Ajuste manual de stock por parte de jefe/bodega.
+PARÁMETROS QUERY: nuevoStock (Integer)
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/productos/{id}
+DESCRIPCIÓN: Elimina un producto del inventario.
+PARÁMETROS RUTA: id (Long)
+ESTADOS HTTP: 204 No Content (Éxito), 404 Not Found (Si no existe).
+
+--------------------------------------------------------------------------------
+3. CATEGORÍA: PEDIDOS (Pedidos-Service - vía Gateway)
+--------------------------------------------------------------------------------
+
+MÉTODO: POST
+RUTA: http://localhost:8080/api/pedidos
+DESCRIPCIÓN: Crea un nuevo pedido orquestado.
+CUERPO (JSON):
+{
+    "clienteId": 1,
+    "direccionEnvio": "Av. Principal 123",
+    "codigoCupon": "DTO10",
+    "items": [
+        {
+            "productoId": 1,
+            "cantidad": 2,
+            "precioUnitario": 10000.0
+        }
+    ]
+}
+ESTADOS HTTP: 201 Created, 500 Error (Si falla stock).
+
+MÉTODO: GET
+RUTA: http://localhost:8080/api/pedidos/{id}
+DESCRIPCIÓN: Obtiene el detalle de un pedido por ID.
+
+MÉTODO: PATCH
+RUTA: http://localhost:8080/api/pedidos/{id}/estado?estado={nuevo_estado}
+DESCRIPCIÓN: Actualiza el estado del pedido (CONFIRMADO, ENVIADO, etc).
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/pedidos/{id}
+DESCRIPCIÓN: Elimina un pedido del sistema.
+PARÁMETROS RUTA: id (Long)
+ESTADOS HTTP: 204 No Content (Éxito), 404 Not Found (Si no existe).
+
+--------------------------------------------------------------------------------
+4. CATEGORÍA: VENTAS (Ventas-Service - vía Gateway)
+--------------------------------------------------------------------------------
+
+MÉTODO: POST
+RUTA: http://localhost:8080/api/ventas
+DESCRIPCIÓN: Registra una venta directa en sucursal.
+CUERPO (JSON):
+{
+    "clienteId": 1,
+    "total": 20000.0,
+    "descuento": 0.0,
+    "tipoDocumento": "BOLETA",
+    "detalles": [
+        {"productoId": 1, "cantidad": 1, "precioUnitario": 20000.0, "subtotal": 20000.0}
+    ]
+}
+
+MÉTODO: GET
+RUTA: http://localhost:8080/api/ventas/reporte
+DESCRIPCIÓN: Genera un reporte completo de ventas.
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/ventas/{id}
+DESCRIPCIÓN: Elimina una venta del sistema.
+PARÁMETROS RUTA: id (Long)
+ESTADOS HTTP: 204 No Content (Éxito), 404 Not Found (Si no existe).
+
+--------------------------------------------------------------------------------
+5. CATEGORÍA: BODEGA (Bodega-Service - vía Gateway)
+--------------------------------------------------------------------------------
+
+MÉTODO: POST
+RUTA: http://localhost:8080/api/bodega/recepcion
+DESCRIPCIÓN: Registra ingreso de mercadería a la bodega central.
+
+MÉTODO: GET
+RUTA: http://localhost:8080/api/bodega/alertas
+DESCRIPCIÓN: Lista productos que están bajo el stock mínimo.
+
+MÉTODO: POST
+RUTA: http://localhost:8080/api/bodega/transferencias
+DESCRIPCIÓN: Solicita transferencia de stock entre sucursales.
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/bodega/{id}
+DESCRIPCIÓN: Elimina un registro de la bodega central.
+PARÁMETROS RUTA: id (Long)
+ESTADOS HTTP: 204 No Content (Éxito), 404 Not Found (Si no existe).
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/bodega/transferencias/{id}
+DESCRIPCIÓN: Elimina una solicitud de transferencia.
+PARÁMETROS RUTA: id (Long)
+ESTADOS HTTP: 204 No Content (Éxito), 404 Not Found (Si no existe).
+
+--------------------------------------------------------------------------------
+6. CATEGORÍA: CLIENTES (Clientes-Service - vía Gateway)
+--------------------------------------------------------------------------------
+
+MÉTODO: GET
+RUTA: http://localhost:8080/api/clientes/{id}
+DESCRIPCIÓN: Obtiene el perfil del cliente.
+
+MÉTODO: PUT
+RUTA: http://localhost:8080/api/clientes/{id}
+DESCRIPCIÓN: Actualiza los datos de contacto y direcciones del cliente.
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/clientes/{id}
+DESCRIPCIÓN: Elimina un cliente del sistema.
+PARÁMETROS RUTA: id (Long)
+ESTADOS HTTP: 204 No Content (Éxito), 404 Not Found (Si no existe).
+
+--------------------------------------------------------------------------------
+7. CATEGORÍA: DESPACHO (Despacho-Service - vía Gateway)
+--------------------------------------------------------------------------------
+
+MÉTODO: POST
+RUTA: http://localhost:8080/api/despacho
+DESCRIPCIÓN: Crea una orden de despacho para un pedido.
+
+MÉTODO: GET
+RUTA: http://localhost:8080/api/despacho/rutas?despachoId={id}
+DESCRIPCIÓN: Genera una ruta optimizada para el transportista.
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/despacho/{id}
+DESCRIPCIÓN: Elimina una orden de despacho.
+PARÁMETROS RUTA: id (Long)
+ESTADOS HTTP: 204 No Content (Éxito), 404 Not Found (Si no existe).
+
+--------------------------------------------------------------------------------
+8. CATEGORÍA: SUCURSALES (Sucursal-Service - vía Gateway)
+--------------------------------------------------------------------------------
+
+MÉTODO: GET
+RUTA: http://localhost:8080/api/sucursales
+DESCRIPCIÓN: Lista todas las sucursales físicas.
+
+MÉTODO: POST
+RUTA: http://localhost:8080/api/sucursales
+DESCRIPCIÓN: Crea una nueva sucursal.
+
+MÉTODO: PUT
+RUTA: http://localhost:8080/api/sucursales/{id}
+DESCRIPCIÓN: Actualiza los datos de una sucursal.
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/sucursales/{id}
+DESCRIPCIÓN: Elimina una sucursal del sistema.
+PARÁMETROS RUTA: id (Long)
+ESTADOS HTTP: 204 No Content (Éxito), 404 Not Found (Si no existe).
+
+--------------------------------------------------------------------------------
+9. CATEGORÍA: CATÁLOGO (Inventario-Service - vía Gateway)
+--------------------------------------------------------------------------------
+Nota: El catálogo está integrado en el inventario-service (no hay servicio separado).
+
+MÉTODO: GET
+RUTA: http://localhost:8080/api/catalogo/buscar?genero=Novela
+DESCRIPCIÓN: Busca libros por autor, editorial o género.
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/catalogo/{id}
+DESCRIPCIÓN: Elimina un libro del catálogo.
+PARÁMETROS RUTA: id (Long)
+ESTADOS HTTP: 204 No Content (Éxito), 404 Not Found (Si no existe).
+
+--------------------------------------------------------------------------------
+10. CATEGORÍA: SOPORTE (Soporte-Service - vía Gateway)
+--------------------------------------------------------------------------------
+
+MÉTODO: POST
+RUTA: http://localhost:8080/api/soporte/tickets
+DESCRIPCIÓN: Crea un ticket de soporte técnico.
+
+MÉTODO: POST
+RUTA: http://localhost:8080/api/soporte/reseñas
+DESCRIPCIÓN: Permite a un cliente calificar un producto.
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/soporte/tickets/{id}
+DESCRIPCIÓN: Elimina un ticket de soporte o una reseña
+PARÁMETROS RUTA: id (Long)
+ESTADOS HTTP: 204 No Content (Éxito), 404 Not Found (Si no existe)
+
+--------------------------------------------------------------------------------
+11. CATEGORÍA: CARRITO DE COMPRAS (Carrito-Service - vía Gateway)
+--------------------------------------------------------------------------------
+
+MÉTODO: GET
+RUTA: http://localhost:8080/api/carrito/usuario/{usuarioId}
+DESCRIPCIÓN: Obtiene el carrito de compras de un usuario registrado
+PARÁMETROS RUTA: usuarioId (Long)
+RESPUESTA EXITOSA (200 OK): CarritoResponseDTO con items, subtotal, impuestos y total
+
+MÉTODO: GET
+RUTA: http://localhost:8080/api/carrito/session/{sessionId}
+DESCRIPCIÓN: Obtiene el carrito de compras temporal para un usuario no registrado
+PARÁMETROS RUTA: sessionId (String)
+RESPUESTA EXITOSA (200 OK): CarritoResponseDTO con items, subtotal, impuestos y total
+
+MÉTODO: POST
+RUTA: http://localhost:8080/api/carrito/items?usuarioId={usuarioId}&sessionId={sessionId}
+DESCRIPCIÓN: Agrega un producto al carrito
+PARÁMETROS QUERY: usuarioId (Long, opcional), sessionId (String, opcional)
+CUERPO (JSON): {"productoId": 1, "cantidad": 2}
+RESPUESTA EXITOSA (200 OK): CarritoResponseDTO con el item agregado
+ESTADOS HTTP: 200 OK, 400 Bad Request
+
+MÉTODO: PUT
+RUTA: http://localhost:8080/api/carrito/items/{itemId}/cantidad?cantidad={nuevaCantidad}
+DESCRIPCIÓN: Actualiza la cantidad de un item en el carrito
+PARÁMETROS RUTA: itemId (Long)
+PARÁMETROS QUERY: cantidad (Integer)
+RESPUESTA EXITOSA (200 OK): CarritoResponseDTO con la cantidad actualizada
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/carrito/items/{itemId}
+DESCRIPCIÓN: Elimina un item del carrito
+PARÁMETROS RUTA: itemId (Long)
+ESTADOS HTTP: 204 No Content (Éxito), 404 Not Found (Si no existe)
+
+MÉTODO: DELETE
+RUTA: http://localhost:8080/api/carrito/vaciar?usuarioId={usuarioId}&sessionId={sessionId}
+DESCRIPCIÓN: Vacía todo el carrito de compras
+PARÁMETROS QUERY: usuarioId (Long, opcional), sessionId (String, opcional)
+ESTADOS HTTP: 204 No Content (Éxito)

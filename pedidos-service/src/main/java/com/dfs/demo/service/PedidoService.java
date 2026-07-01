@@ -10,4 +10,5 @@ public interface PedidoService {
     PedidoResponseDTO obtenerPedidoPorId(Long id);
     List<PedidoResponseDTO> obtenerPedidosPorCliente(Long clienteId);
     PedidoResponseDTO actualizarEstado(Long id, String nuevoEstado);
+    void eliminarPedido(Long id);
 }

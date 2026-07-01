@@ -36,4 +36,15 @@ public class ClienteController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarCliente(@PathVariable Long id) {
+        log.info("Eliminando cliente con ID: {}", id);
+        if (clienteRepository.existsById(id)) {
+            clienteRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

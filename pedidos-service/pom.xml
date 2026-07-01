@@ -12,8 +12,6 @@
 	<name>pedidos-service</name>
 	<description>Microservicio de Pedidos para BookPoint Chile</description>
 
-	<dependencies>
-		<!-- Las dependencias se heredan del padre -->
-	</dependencies>
+	
 
 </project>

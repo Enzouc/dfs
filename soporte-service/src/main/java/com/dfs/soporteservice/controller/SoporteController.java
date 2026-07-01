@@ -40,4 +40,15 @@ public class SoporteController {
         log.info("Consultando reseñas para producto ID: {}", productoId);
         return soporteRepository.findByProductoIdAndTipo(productoId, "RESEÑA");
     }
+
+    @DeleteMapping("/tickets/{id}")
+    public ResponseEntity<Void> eliminarTicket(@PathVariable Long id) {
+        log.info("Eliminando ticket/reseña con ID: {}", id);
+        if (soporteRepository.existsById(id)) {
+            soporteRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

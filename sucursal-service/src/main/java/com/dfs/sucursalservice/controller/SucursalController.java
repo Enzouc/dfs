@@ -42,4 +42,15 @@ public class SucursalController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarSucursal(@PathVariable Long id) {
+        log.info("Eliminando sucursal con ID: {}", id);
+        if (sucursalRepository.existsById(id)) {
+            sucursalRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

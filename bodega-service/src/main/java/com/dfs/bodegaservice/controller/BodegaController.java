@@ -60,4 +60,26 @@ public class BodegaController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarRegistroBodega(@PathVariable Long id) {
+        log.info("Eliminando registro de bodega con ID: {}", id);
+        if (bodegaRepository.existsById(id)) {
+            bodegaRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/transferencias/{id}")
+    public ResponseEntity<Void> eliminarTransferencia(@PathVariable Long id) {
+        log.info("Eliminando transferencia con ID: {}", id);
+        if (transferenciaRepository.existsById(id)) {
+            transferenciaRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

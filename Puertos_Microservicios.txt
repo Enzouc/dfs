@@ -16,6 +16,7 @@ de forma independiente, tras la eliminacion del Proxy Inverso.
 | Bodega              | 8088   | http://localhost:8088/api/bodega      | http://localhost:8088/swagger-ui.html|
 | Soporte             | 8089   | http://localhost:8089/api/soporte     | http://localhost:8089/swagger-ui.html|
 | Catalogo            | 8090   | http://localhost:8090/api/catalogo    | http://localhost:8090/swagger-ui.html|
+| Carrito (Cart)      | 8091   | http://localhost:8091/api/cart        | http://localhost:8091/swagger-ui.html|
 
 NOTAS IMPORTANTES:
 1. Asegurate de que MySQL en XAMPP este iniciado antes de ejecutar los servicios.
