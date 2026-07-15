@@ -1,9 +1,9 @@
 package com.dfs.sucursalservice.controller;
 
-import com.dfs.sucursalservice.controller.SucursalController;
 import com.dfs.sucursalservice.model.entity.Sucursal;
-import com.dfs.sucursalservice.repository.SucursalRepository;
+import com.dfs.sucursalservice.service.SucursalService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -26,23 +26,24 @@ import org.springframework.context.annotation.Import;
 @WebMvcTest(SucursalController.class)
 @Import(TestSecurityConfig.class)
 @WithMockUser
-public class SucursalControllerTest {
+class SucursalControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private SucursalRepository sucursalRepository;
+    private SucursalService sucursalService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
-    public void testListarSucursales() throws Exception {
+    @DisplayName("Test: listar sucursales - 200 OK")
+    void testListarSucursales() throws Exception {
         Sucursal s1 = Sucursal.builder().id(1L).nombre("Sucursal Centro").build();
         Sucursal s2 = Sucursal.builder().id(2L).nombre("Sucursal Sur").build();
 
-        when(sucursalRepository.findAll()).thenReturn(List.of(s1, s2));
+        when(sucursalService.listarSucursales()).thenReturn(List.of(s1, s2));
 
         mockMvc.perform(get("/api/sucursales"))
                 .andExpect(status().isOk())
@@ -50,7 +51,8 @@ public class SucursalControllerTest {
     }
 
     @Test
-    public void testCrearSucursal() throws Exception {
+    @DisplayName("Test: crear sucursal - 200 OK")
+    void testCrearSucursal() throws Exception {
         Sucursal request = Sucursal.builder()
                 .nombre("Nueva Sucursal")
                 .direccion("Calle 123")
@@ -62,7 +64,7 @@ public class SucursalControllerTest {
                 .direccion("Calle 123")
                 .build();
 
-        when(sucursalRepository.save(any(Sucursal.class))).thenReturn(saved);
+        when(sucursalService.crearSucursal(any(Sucursal.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/sucursales")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -72,12 +74,11 @@ public class SucursalControllerTest {
     }
 
     @Test
-    public void testActualizarSucursalExistente() throws Exception {
-        Sucursal existing = Sucursal.builder().id(1L).nombre("Sucursal Vieja").build();
+    @DisplayName("Test: actualizar sucursal existente - 200 OK")
+    void testActualizarSucursalExistente() throws Exception {
         Sucursal updated = Sucursal.builder().id(1L).nombre("Sucursal Nueva").build();
 
-        when(sucursalRepository.findById(1L)).thenReturn(Optional.of(existing));
-        when(sucursalRepository.save(any(Sucursal.class))).thenReturn(updated);
+        when(sucursalService.actualizarSucursal(eq(1L), any(Sucursal.class))).thenReturn(Optional.of(updated));
 
         mockMvc.perform(put("/api/sucursales/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -87,10 +88,11 @@ public class SucursalControllerTest {
     }
 
     @Test
-    public void testActualizarSucursalNoExistente() throws Exception {
+    @DisplayName("Test: actualizar sucursal no existente - 404 Not Found")
+    void testActualizarSucursalNoExistente() throws Exception {
         Sucursal updated = Sucursal.builder().nombre("Test").build();
 
-        when(sucursalRepository.findById(99L)).thenReturn(Optional.empty());
+        when(sucursalService.actualizarSucursal(eq(99L), any(Sucursal.class))).thenReturn(Optional.empty());
 
         mockMvc.perform(put("/api/sucursales/99")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -99,17 +101,18 @@ public class SucursalControllerTest {
     }
 
     @Test
-    public void testEliminarSucursalExistente() throws Exception {
-        when(sucursalRepository.existsById(1L)).thenReturn(true);
-        doNothing().when(sucursalRepository).deleteById(1L);
+    @DisplayName("Test: eliminar sucursal existente - 204 No Content")
+    void testEliminarSucursalExistente() throws Exception {
+        when(sucursalService.eliminarSucursal(1L)).thenReturn(true);
 
         mockMvc.perform(delete("/api/sucursales/1"))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    public void testEliminarSucursalNoExistente() throws Exception {
-        when(sucursalRepository.existsById(99L)).thenReturn(false);
+    @DisplayName("Test: eliminar sucursal no existente - 404 Not Found")
+    void testEliminarSucursalNoExistente() throws Exception {
+        when(sucursalService.eliminarSucursal(99L)).thenReturn(false);
 
         mockMvc.perform(delete("/api/sucursales/99"))
                 .andExpect(status().isNotFound());

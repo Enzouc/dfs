@@ -1,7 +1,8 @@
 package com.dfs.bodegaservice.controller;
 
 import com.dfs.bodegaservice.model.entity.BodegaCentral;
-import com.dfs.bodegaservice.repository.BodegaRepository;
+import com.dfs.bodegaservice.model.entity.Transferencia;
+import com.dfs.bodegaservice.service.BodegaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -15,26 +16,16 @@ import java.util.List;
 @Slf4j
 public class BodegaController {
 
-    private final BodegaRepository bodegaRepository;
-    private final com.dfs.bodegaservice.repository.TransferenciaRepository transferenciaRepository;
+    private final BodegaService bodegaService;
 
     @PostMapping("/recepcion")
     public ResponseEntity<BodegaCentral> registrarIngreso(@RequestBody BodegaCentral ingreso) {
-        log.info("Encargado de Bodega registrando ingreso de producto ID: {}", ingreso.getProductoId());
-        return bodegaRepository.findById(ingreso.getProductoId())
-                .map(b -> {
-                    b.setStockCentral(b.getStockCentral() + ingreso.getStockCentral());
-                    return ResponseEntity.ok(bodegaRepository.save(b));
-                })
-                .orElse(ResponseEntity.ok(bodegaRepository.save(ingreso)));
+        return ResponseEntity.ok(bodegaService.registrarIngreso(ingreso));
     }
 
     @GetMapping("/alertas")
     public List<BodegaCentral> consultarAlertasReposicion() {
-        log.info("Consultando alertas de stock mínimo");
-        return bodegaRepository.findAll().stream()
-                .filter(b -> b.getStockCentral() <= b.getStockMinimo())
-                .toList();
+        return bodegaService.consultarAlertasReposicion();
     }
 
     @PostMapping("/salida")
@@ -44,28 +35,20 @@ public class BodegaController {
     }
 
     @PostMapping("/transferencias")
-    public ResponseEntity<com.dfs.bodegaservice.model.entity.Transferencia> solicitarTransferencia(@RequestBody com.dfs.bodegaservice.model.entity.Transferencia transferencia) {
-        log.info("Solicitando transferencia interna de stock");
-        transferencia.setEstado("SOLICITADA");
-        return ResponseEntity.ok(transferenciaRepository.save(transferencia));
+    public ResponseEntity<Transferencia> solicitarTransferencia(@RequestBody Transferencia transferencia) {
+        return ResponseEntity.ok(bodegaService.solicitarTransferencia(transferencia));
     }
 
     @PatchMapping("/transferencias/{id}/estado")
-    public ResponseEntity<com.dfs.bodegaservice.model.entity.Transferencia> procesarTransferencia(@PathVariable Long id, @RequestParam String estado) {
-        log.info("Administrador/Bodega procesando transferencia ID: {} a estado: {}", id, estado);
-        return transferenciaRepository.findById(id)
-                .map(t -> {
-                    t.setEstado(estado);
-                    return ResponseEntity.ok(transferenciaRepository.save(t));
-                })
+    public ResponseEntity<Transferencia> procesarTransferencia(@PathVariable Long id, @RequestParam String estado) {
+        return bodegaService.procesarTransferencia(id, estado)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarRegistroBodega(@PathVariable Long id) {
-        log.info("Eliminando registro de bodega con ID: {}", id);
-        if (bodegaRepository.existsById(id)) {
-            bodegaRepository.deleteById(id);
+        if (bodegaService.eliminarRegistroBodega(id)) {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
@@ -74,9 +57,7 @@ public class BodegaController {
 
     @DeleteMapping("/transferencias/{id}")
     public ResponseEntity<Void> eliminarTransferencia(@PathVariable Long id) {
-        log.info("Eliminando transferencia con ID: {}", id);
-        if (transferenciaRepository.existsById(id)) {
-            transferenciaRepository.deleteById(id);
+        if (bodegaService.eliminarTransferencia(id)) {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();

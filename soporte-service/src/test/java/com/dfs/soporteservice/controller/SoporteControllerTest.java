@@ -1,9 +1,9 @@
 package com.dfs.soporteservice.controller;
 
-import com.dfs.soporteservice.controller.SoporteController;
 import com.dfs.soporteservice.model.entity.TicketSoporte;
-import com.dfs.soporteservice.repository.SoporteRepository;
+import com.dfs.soporteservice.service.SoporteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -13,7 +13,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -26,19 +25,20 @@ import org.springframework.context.annotation.Import;
 @WebMvcTest(SoporteController.class)
 @Import(TestSecurityConfig.class)
 @WithMockUser
-public class SoporteControllerTest {
+class SoporteControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private SoporteRepository soporteRepository;
+    private SoporteService soporteService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
-    public void testCrearTicket() throws Exception {
+    @DisplayName("Test: crear ticket - 200 OK")
+    void testCrearTicket() throws Exception {
         TicketSoporte request = TicketSoporte.builder()
                 .clienteId(1L)
                 .mensaje("Problema con envío")
@@ -52,7 +52,7 @@ public class SoporteControllerTest {
                 .estado("ABIERTO")
                 .build();
 
-        when(soporteRepository.save(any(TicketSoporte.class))).thenReturn(saved);
+        when(soporteService.crearTicket(any(TicketSoporte.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/soporte/tickets")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -63,7 +63,8 @@ public class SoporteControllerTest {
     }
 
     @Test
-    public void testDejarReseña() throws Exception {
+    @DisplayName("Test: dejar reseña - 200 OK")
+    void testDejarReseña() throws Exception {
         TicketSoporte request = TicketSoporte.builder()
                 .clienteId(1L)
                 .productoId(1L)
@@ -79,7 +80,7 @@ public class SoporteControllerTest {
                 .calificacion(5)
                 .build();
 
-        when(soporteRepository.save(any(TicketSoporte.class))).thenReturn(saved);
+        when(soporteService.dejarReseña(any(TicketSoporte.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/soporte/reseñas")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -89,11 +90,12 @@ public class SoporteControllerTest {
     }
 
     @Test
-    public void testListarReseñas() throws Exception {
+    @DisplayName("Test: listar reseñas por producto - 200 OK")
+    void testListarReseñas() throws Exception {
         TicketSoporte r1 = TicketSoporte.builder().id(1L).productoId(1L).tipo("RESEÑA").build();
         TicketSoporte r2 = TicketSoporte.builder().id(2L).productoId(1L).tipo("RESEÑA").build();
 
-        when(soporteRepository.findByProductoIdAndTipo(1L, "RESEÑA")).thenReturn(List.of(r1, r2));
+        when(soporteService.listarReseñas(1L)).thenReturn(List.of(r1, r2));
 
         mockMvc.perform(get("/api/soporte/reseñas/producto/1"))
                 .andExpect(status().isOk())
@@ -101,17 +103,18 @@ public class SoporteControllerTest {
     }
 
     @Test
-    public void testEliminarTicketExistente() throws Exception {
-        when(soporteRepository.existsById(1L)).thenReturn(true);
-        doNothing().when(soporteRepository).deleteById(1L);
+    @DisplayName("Test: eliminar ticket existente - 204 No Content")
+    void testEliminarTicketExistente() throws Exception {
+        when(soporteService.eliminarTicket(1L)).thenReturn(true);
 
         mockMvc.perform(delete("/api/soporte/tickets/1"))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    public void testEliminarTicketNoExistente() throws Exception {
-        when(soporteRepository.existsById(99L)).thenReturn(false);
+    @DisplayName("Test: eliminar ticket no existente - 404 Not Found")
+    void testEliminarTicketNoExistente() throws Exception {
+        when(soporteService.eliminarTicket(99L)).thenReturn(false);
 
         mockMvc.perform(delete("/api/soporte/tickets/99"))
                 .andExpect(status().isNotFound());

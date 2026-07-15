@@ -1,9 +1,9 @@
 package com.dfs.clientesservice.controller;
 
-import com.dfs.clientesservice.controller.ClienteController;
 import com.dfs.clientesservice.model.entity.Cliente;
-import com.dfs.clientesservice.repository.ClienteRepository;
+import com.dfs.clientesservice.service.ClienteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -25,26 +25,27 @@ import org.springframework.context.annotation.Import;
 @WebMvcTest(ClienteController.class)
 @Import(TestSecurityConfig.class)
 @WithMockUser
-public class ClienteControllerTest {
+class ClienteControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private ClienteRepository clienteRepository;
+    private ClienteService clienteService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
-    public void testObtenerPerfilClienteExistente() throws Exception {
+    @DisplayName("Test: obtener perfil cliente existente - 200 OK")
+    void testObtenerPerfilClienteExistente() throws Exception {
         Cliente cliente = Cliente.builder()
                 .id(1L)
                 .nombre("Juan Perez")
                 .email("juan@test.com")
                 .build();
 
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
+        when(clienteService.obtenerPerfil(1L)).thenReturn(Optional.of(cliente));
 
         mockMvc.perform(get("/api/clientes/1"))
                 .andExpect(status().isOk())
@@ -53,28 +54,24 @@ public class ClienteControllerTest {
     }
 
     @Test
-    public void testObtenerPerfilClienteNoExistente() throws Exception {
-        when(clienteRepository.findById(99L)).thenReturn(Optional.empty());
+    @DisplayName("Test: obtener perfil cliente no existente - 404 Not Found")
+    void testObtenerPerfilClienteNoExistente() throws Exception {
+        when(clienteService.obtenerPerfil(99L)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/clientes/99"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    public void testActualizarPerfilClienteExistente() throws Exception {
-        Cliente existing = Cliente.builder()
-                .id(1L)
-                .nombre("Juan Perez")
-                .build();
-
+    @DisplayName("Test: actualizar perfil cliente existente - 200 OK")
+    void testActualizarPerfilClienteExistente() throws Exception {
         Cliente updated = Cliente.builder()
                 .id(1L)
                 .nombre("Juan Pablo Perez")
                 .email("jp@test.com")
                 .build();
 
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(existing));
-        when(clienteRepository.save(any(Cliente.class))).thenReturn(updated);
+        when(clienteService.actualizarPerfil(eq(1L), any(Cliente.class))).thenReturn(Optional.of(updated));
 
         mockMvc.perform(put("/api/clientes/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -84,10 +81,11 @@ public class ClienteControllerTest {
     }
 
     @Test
-    public void testActualizarPerfilClienteNoExistente() throws Exception {
+    @DisplayName("Test: actualizar perfil cliente no existente - 404 Not Found")
+    void testActualizarPerfilClienteNoExistente() throws Exception {
         Cliente updated = Cliente.builder().nombre("Test").build();
 
-        when(clienteRepository.findById(99L)).thenReturn(Optional.empty());
+        when(clienteService.actualizarPerfil(eq(99L), any(Cliente.class))).thenReturn(Optional.empty());
 
         mockMvc.perform(put("/api/clientes/99")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -96,17 +94,18 @@ public class ClienteControllerTest {
     }
 
     @Test
-    public void testEliminarClienteExistente() throws Exception {
-        when(clienteRepository.existsById(1L)).thenReturn(true);
-        doNothing().when(clienteRepository).deleteById(1L);
+    @DisplayName("Test: eliminar cliente existente - 204 No Content")
+    void testEliminarClienteExistente() throws Exception {
+        when(clienteService.eliminarCliente(1L)).thenReturn(true);
 
         mockMvc.perform(delete("/api/clientes/1"))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    public void testEliminarClienteNoExistente() throws Exception {
-        when(clienteRepository.existsById(99L)).thenReturn(false);
+    @DisplayName("Test: eliminar cliente no existente - 404 Not Found")
+    void testEliminarClienteNoExistente() throws Exception {
+        when(clienteService.eliminarCliente(99L)).thenReturn(false);
 
         mockMvc.perform(delete("/api/clientes/99"))
                 .andExpect(status().isNotFound());

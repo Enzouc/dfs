@@ -1,7 +1,7 @@
 package com.dfs.sucursalservice.controller;
 
 import com.dfs.sucursalservice.model.entity.Sucursal;
-import com.dfs.sucursalservice.repository.SucursalRepository;
+import com.dfs.sucursalservice.service.SucursalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -15,39 +15,28 @@ import java.util.List;
 @Slf4j
 public class SucursalController {
 
-    private final SucursalRepository sucursalRepository;
+    private final SucursalService sucursalService;
 
     @GetMapping
     public List<Sucursal> listarSucursales() {
-        log.info("Consultando todas las sucursales");
-        return sucursalRepository.findAll();
+        return sucursalService.listarSucursales();
     }
 
     @PostMapping
     public ResponseEntity<Sucursal> crearSucursal(@RequestBody Sucursal sucursal) {
-        log.info("Creando/Actualizando datos de sucursal: {}", sucursal.getNombre());
-        return ResponseEntity.ok(sucursalRepository.save(sucursal));
+        return ResponseEntity.ok(sucursalService.crearSucursal(sucursal));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Sucursal> actualizarSucursal(@PathVariable Long id, @RequestBody Sucursal sucursal) {
-        log.info("Actualizando sucursal ID: {}", id);
-        return sucursalRepository.findById(id)
-                .map(s -> {
-                    s.setNombre(sucursal.getNombre());
-                    s.setDireccion(sucursal.getDireccion());
-                    s.setHorario(sucursal.getHorario());
-                    s.setPersonalEncargado(sucursal.getPersonalEncargado());
-                    return ResponseEntity.ok(sucursalRepository.save(s));
-                })
+        return sucursalService.actualizarSucursal(id, sucursal)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarSucursal(@PathVariable Long id) {
-        log.info("Eliminando sucursal con ID: {}", id);
-        if (sucursalRepository.existsById(id)) {
-            sucursalRepository.deleteById(id);
+        if (sucursalService.eliminarSucursal(id)) {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();

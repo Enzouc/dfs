@@ -1,13 +1,11 @@
 package com.dfs.despachoservice.controller;
 
 import com.dfs.despachoservice.model.entity.Despacho;
-import com.dfs.despachoservice.repository.DespachoRepository;
+import com.dfs.despachoservice.service.DespachoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/despacho")
@@ -15,23 +13,17 @@ import java.util.List;
 @Slf4j
 public class DespachoController {
 
-    private final DespachoRepository despachoRepository;
+    private final DespachoService despachoService;
 
     @PostMapping
     public ResponseEntity<Despacho> crearDespacho(@RequestBody Despacho despacho) {
-        log.info("Logística coordinando nuevo envío para pedido ID: {}", despacho.getPedidoId());
-        despacho.setEstado("PENDIENTE");
-        return ResponseEntity.ok(despachoRepository.save(despacho));
+        return ResponseEntity.ok(despachoService.crearDespacho(despacho));
     }
 
     @PatchMapping("/{id}/estado")
     public ResponseEntity<Despacho> actualizarEstado(@PathVariable Long id, @RequestParam String estado) {
-        log.info("Actualizando estado de envío ID: {} a {}", id, estado);
-        return despachoRepository.findById(id)
-                .map(d -> {
-                    d.setEstado(estado);
-                    return ResponseEntity.ok(despachoRepository.save(d));
-                })
+        return despachoService.actualizarEstado(id, estado)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -43,9 +35,7 @@ public class DespachoController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarDespacho(@PathVariable Long id) {
-        log.info("Eliminando despacho con ID: {}", id);
-        if (despachoRepository.existsById(id)) {
-            despachoRepository.deleteById(id);
+        if (despachoService.eliminarDespacho(id)) {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();

@@ -1,7 +1,7 @@
 package com.dfs.authservice.controller;
 
 import com.dfs.authservice.model.entity.Usuario;
-import com.dfs.authservice.repository.UsuarioRepository;
+import com.dfs.authservice.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,25 +16,21 @@ import java.util.Set;
 @Slf4j
 public class AuthController {
 
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioService usuarioService;
 
     @PostMapping("/usuarios")
     public ResponseEntity<Usuario> crearUsuario(@jakarta.validation.Valid @RequestBody Usuario usuario) {
-        log.info("Administrador creando usuario: {}", usuario.getUsername());
-        return ResponseEntity.ok(usuarioRepository.save(usuario));
+        return ResponseEntity.ok(usuarioService.crearUsuario(usuario));
     }
 
     @GetMapping("/usuarios")
     public List<Usuario> listarUsuarios() {
-        log.info("Consultando lista de usuarios");
-        return usuarioRepository.findAll();
+        return usuarioService.listarUsuarios();
     }
 
     @DeleteMapping("/usuarios/{id}")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
-        log.info("Eliminando usuario con ID: {}", id);
-        if (usuarioRepository.existsById(id)) {
-            usuarioRepository.deleteById(id);
+        if (usuarioService.eliminarUsuario(id)) {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
@@ -43,12 +39,8 @@ public class AuthController {
 
     @PatchMapping("/usuarios/{id}/permisos")
     public ResponseEntity<Usuario> modificarPermisos(@PathVariable Long id, @RequestBody Set<String> permisos) {
-        log.info("Modificando permisos para usuario ID: {}", id);
-        return usuarioRepository.findById(id)
-                .map(u -> {
-                    u.setPermisos(permisos);
-                    return ResponseEntity.ok(usuarioRepository.save(u));
-                })
+        return usuarioService.modificarPermisos(id, permisos)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
